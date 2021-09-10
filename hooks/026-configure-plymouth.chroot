@@ -1,0 +1,39 @@
+#! /bin/sh -ex
+
+# Rewrite units for plymouth
+# TODO this is just to add --debug, remove before merging
+cat << 'EOF' > /lib/systemd/system/plymouth-start.service
+[Unit]
+Description=Show Plymouth Boot Screen
+DefaultDependencies=no
+Wants=systemd-ask-password-plymouth.path
+After=systemd-udev-trigger.service systemd-udevd.service keyboard-setup.service
+Before=systemd-ask-password-plymouth.service
+ConditionKernelCommandLine=!plymouth.enable=0
+ConditionKernelCommandLine=!nosplash
+ConditionKernelCommandLine=splash
+ConditionVirtualization=!container
+
+[Service]
+ExecStart=/sbin/plymouthd --mode=boot --pid-file=/run/plymouth/pid --attach-to-session --debug
+ExecStartPost=-/bin/plymouth show-splash
+Type=forking
+KillMode=none
+SendSIGKILL=no
+EOF
+
+# Add wait in mount of the ubuntu-seed partition so we can access custom theme
+cat << 'EOF' > /lib/systemd/system/plymouth-quit.service
+[Unit]
+Description=Terminate Plymouth Boot Screen
+After=plymouth-start.service snapd.seeded.service run-mnt-ubuntu\x2dseed.mount
+ConditionKernelCommandLine=snapd_recovery_mode=run
+
+[Service]
+ExecStart=-/bin/plymouth quit
+Type=oneshot
+TimeoutSec=20
+EOF
+
+# Don't really need this one?
+rm /lib/systemd/system/multi-user.target.wants/plymouth-quit-wait.service
