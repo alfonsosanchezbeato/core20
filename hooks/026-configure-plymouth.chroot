@@ -35,5 +35,59 @@ Type=oneshot
 TimeoutSec=20
 EOF
 
+cat << 'EOF' > /lib/systemd/system/plymouth-show-run.service
+[Unit]
+Description=Display state on splash
+After=plymouth-start.service
+ConditionKernelCommandLine=snapd_recovery_mode=run
+
+[Service]
+ExecStart=-/bin/plymouth display-message --text='Seeding snaps...'
+Type=oneshot
+TimeoutSec=20
+
+[Install]
+WantedBy=sysinit.target
+EOF
+
+cat << 'EOF' > /lib/systemd/system/plymouth-show-install.service
+[Unit]
+Description=Display state on splash
+After=plymouth-start.service
+ConditionKernelCommandLine=snapd_recovery_mode=install
+
+[Service]
+ExecStart=-/bin/plymouth display-message --text='Installing Ubuntu Core...'
+Type=oneshot
+TimeoutSec=20
+
+[Install]
+WantedBy=sysinit.target
+EOF
+
+cat << 'EOF' > /lib/systemd/system/plymouth-show-recover.service
+[Unit]
+Description=Display state on splash
+After=plymouth-start.service
+ConditionKernelCommandLine=snapd_recovery_mode=recover
+
+[Service]
+ExecStart=-/bin/plymouth display-message --text='Running recovery...'
+Type=oneshot
+TimeoutSec=20
+
+[Install]
+WantedBy=sysinit.target
+EOF
+
+for mode in run show recover; do
+    service=plymouth-show-$mode.service
+    ln -sf ../$service /lib/systemd/system/sysinit.target.wants/$service
+done
+
 # Don't really need this one?
 rm /lib/systemd/system/multi-user.target.wants/plymouth-quit-wait.service
+
+# Set UC as the default plymouth theme
+ln -sf /usr/share/plymouth/themes/ubuntu-core/ubuntu-core.plymouth \
+   /usr/share/plymouth/themes/default.plymouth
