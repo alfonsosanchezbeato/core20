@@ -40,6 +40,7 @@ cat << 'EOF' > /lib/systemd/system/plymouth-show-run.service
 Description=Display state on splash
 After=plymouth-start.service
 ConditionKernelCommandLine=snapd_recovery_mode=run
+ConditionPathExists=/run/plymouth/pid
 
 [Service]
 ExecStart=-/bin/plymouth display-message --text='Seeding snaps...'
@@ -55,6 +56,7 @@ cat << 'EOF' > /lib/systemd/system/plymouth-show-install.service
 Description=Display state on splash
 After=plymouth-start.service
 ConditionKernelCommandLine=snapd_recovery_mode=install
+ConditionPathExists=/run/plymouth/pid
 
 [Service]
 ExecStart=-/bin/plymouth display-message --text='Installing Ubuntu Core...'
@@ -70,6 +72,7 @@ cat << 'EOF' > /lib/systemd/system/plymouth-show-recover.service
 Description=Display state on splash
 After=plymouth-start.service
 ConditionKernelCommandLine=snapd_recovery_mode=recover
+ConditionPathExists=/run/plymouth/pid
 
 [Service]
 ExecStart=-/bin/plymouth display-message --text='Running recovery...'
