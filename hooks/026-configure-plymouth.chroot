@@ -35,6 +35,13 @@ Type=oneshot
 TimeoutSec=20
 EOF
 
+mkdir -p /etc/plymouth
+cat << 'EOF' > /etc/plymouth/plymouthd.conf
+[Daemon]
+Theme=vendor
+ThemePath=/run/mnt/ubuntu-seed/plymouth/themes
+EOF
+
 cat << 'EOF' > /lib/systemd/system/plymouth-show-run.service
 [Unit]
 Description=Display state on splash
