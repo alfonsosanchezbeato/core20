@@ -83,7 +83,7 @@ TimeoutSec=20
 WantedBy=sysinit.target
 EOF
 
-for mode in run show recover; do
+for mode in run install recover; do
     service=plymouth-show-$mode.service
     ln -sf ../$service /lib/systemd/system/sysinit.target.wants/$service
 done
