@@ -13,6 +13,7 @@ ConditionKernelCommandLine=!plymouth.enable=0
 ConditionKernelCommandLine=!nosplash
 ConditionKernelCommandLine=splash
 ConditionVirtualization=!container
+Requires=plymouth-quit.service splash-client.service plymouth-show-run.service plymouth-show-install.service plymouth-show-recover.service
 
 [Service]
 ExecStart=/sbin/plymouthd --mode=boot --pid-file=/run/plymouth/pid --attach-to-session --debug
@@ -31,8 +32,19 @@ ConditionKernelCommandLine=snapd_recovery_mode=run
 
 [Service]
 ExecStart=-/bin/plymouth quit
+ExecStartPost=-systemctl stop splash-client.service
 Type=oneshot
 TimeoutSec=20
+EOF
+
+cat << 'EOF' > /lib/systemd/system/splash-client.service
+[Unit]
+Description=Update Plymouth Boot Screen
+After=plymouth-start.service snapd.service snapd.socket
+ConditionKernelCommandLine=snapd_recovery_mode=run
+
+[Service]
+ExecStart=-/usr/bin/splash-client
 EOF
 
 mkdir -p /etc/plymouth
@@ -50,7 +62,7 @@ ConditionKernelCommandLine=snapd_recovery_mode=run
 ConditionPathExists=/run/plymouth/pid
 
 [Service]
-ExecStart=-/bin/plymouth display-message --text='Seeding snaps...'
+ExecStart=-/bin/plymouth display-message --text='Starting system...'
 Type=oneshot
 TimeoutSec=20
 
@@ -90,13 +102,10 @@ TimeoutSec=20
 WantedBy=sysinit.target
 EOF
 
-for mode in run install recover; do
-    service=plymouth-show-$mode.service
-    ln -sf ../$service /lib/systemd/system/sysinit.target.wants/$service
-done
-
-# Don't really need this one?
+# We pull by "Requires" instead, so these units are not run unless plymouth-start is
 rm /lib/systemd/system/multi-user.target.wants/plymouth-quit-wait.service
+rm /lib/systemd/system/multi-user.target.wants/plymouth-quit.service
+rm /lib/systemd/system/sysinit.target.wants/plymouth-read-write.service
 
 # Set UC as the default plymouth theme
 ln -sf /usr/share/plymouth/themes/ubuntu-core/ubuntu-core.plymouth \
