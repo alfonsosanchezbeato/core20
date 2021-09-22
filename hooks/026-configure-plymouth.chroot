@@ -1,7 +1,6 @@
 #! /bin/sh -ex
 
 # Rewrite units for plymouth
-# TODO this is just to add --debug, remove before merging
 cat << 'EOF' > /lib/systemd/system/plymouth-start.service
 [Unit]
 Description=Show Plymouth Boot Screen
@@ -16,7 +15,7 @@ ConditionVirtualization=!container
 Requires=plymouth-quit.service splash-client.service plymouth-show-run.service plymouth-show-install.service plymouth-show-recover.service
 
 [Service]
-ExecStart=/sbin/plymouthd --mode=boot --pid-file=/run/plymouth/pid --attach-to-session --debug
+ExecStart=/sbin/plymouthd --mode=boot --pid-file=/run/plymouth/pid --attach-to-session
 ExecStartPost=-/bin/plymouth show-splash
 Type=forking
 KillMode=none
