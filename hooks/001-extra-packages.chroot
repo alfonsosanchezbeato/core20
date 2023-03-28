@@ -40,9 +40,18 @@ Ht/skh2wZSHtJgejt9kqIKMho1wtYz7ZTqMtN9GJK0VONbHP0Xu6
 
 EOF
 
+apt update
+apt install --no-install-recommends -y software-properties-common
+
+# XXX enable test systemd ppa
+add-apt-repository -y ppa:enr0n/systemd-245
+
 # install some packages we need
 apt update
-apt dist-upgrade -y
+apt dist-upgrade -y \
+    -o Dpkg::Options::=--force-confnew \
+    -o Dpkg::Options::=--force-confdef \
+    -y --allow-downgrades --allow-remove-essential --allow-change-held-packages
 apt install --no-install-recommends -y \
     systemd \
     systemd-sysv \
